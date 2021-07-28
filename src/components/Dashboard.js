@@ -13,7 +13,7 @@ export default function Dashboard() {
 	}
 	return (
 		<>
-			<Card className="p-3">
+			<Card className="p-1" style={{border:"none"}}>
 				<Card.Body>
 					<h2 className="mb-4 text-center">Profile</h2><hr/>
 					{error && <Alert variant="danger">{error}</Alert>}

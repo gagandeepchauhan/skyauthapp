@@ -6,7 +6,8 @@ import {Link} from 'react-router-dom'
 export default function ForgotPassword() {
 	const [emailRef,tokenRef,newPasswordRef]=[useRef(),useRef(),useRef()]
 	const [showUpdate,setShowUpdate]=useState(false)
-	const {resetPassword,updatePassword}=useAuth()
+	const [showMsg,setShowMsg]=useState(false)
+	const {resetPassword,updatePassword,displayMessages,msg}=useAuth()
 	const [error,setError]=useState([])
 	const [message,setMessage]=useState('')
 	const [loading,setLoading]=useState(false)
@@ -17,17 +18,21 @@ export default function ForgotPassword() {
 			setMessage("")
 			setError([])
 			setLoading(true)
+			setShowMsg(true)
+			displayMessages()
 			const resp=await resetPassword({email:emailRef.current.value})
 			const result=await resp.json()
 			if(resp.ok){
 				setMessage("Check your mailbox and extract token from it")
 				setShowUpdate(true)
+				setMessage('')
 			}else{
 				setError(result.errors)
 			}
 		}catch(err){
 			setError([{field:'Fetch failed',message:err.message}])
 		}
+		setShowMsg(false)
 		setLoading(false)
 	}
 	async function handleUpdate(e){
@@ -36,6 +41,8 @@ export default function ForgotPassword() {
 			setMessage("")
 			setError([])
 			setLoading(true)
+			setShowMsg(true)
+			displayMessages()
 			const resp=await updatePassword({new_password:newPasswordRef.current.value,token:tokenRef.current.value})
 			const result=await resp.json()
 			if(resp.ok){
@@ -46,11 +53,12 @@ export default function ForgotPassword() {
 		}catch(err){
 			setError([{field:'Fetch failed',message:err.message}])
 		}
+		setShowMsg(false)
 		setLoading(false)
 	}
 	return (
 		<>
-			<Card className="p-3">
+			<Card className="p-1" style={{border:"none"}} >
 				<Card.Body>
 					<h2 className="mb-4 text-center">Password Reset</h2>
 					{error.length!==0 && <Alert variant="danger">
@@ -67,10 +75,19 @@ export default function ForgotPassword() {
 									<Form.Control type="text" ref={newPasswordRef} required />
 								</Form.Group>
 								<Form.Group id="token">
-									<Form.Label>Token</Form.Label>
+									<Form.Label>Token <small>(recieved on mail)</small></Form.Label>
 									<Form.Control type="text" ref={tokenRef} required />
 								</Form.Group>
-								<Button disabled={loading} className="w-100 my-2" type="submit" >Reset Password</Button>
+								<Button disabled={loading} className="w-100 my-2" type="submit" >
+									{loading ?
+									<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+									:
+									<span>Reset password</span>
+									}
+								</Button>
+								<p>
+									<small className="text-danger">{showMsg && msg && `${msg}...`}</small>
+								</p>
 							</Form>
 							:
 							<Form onSubmit={handleSubmit} >
@@ -78,7 +95,16 @@ export default function ForgotPassword() {
 									<Form.Label>Email</Form.Label>
 									<Form.Control type="email" ref={emailRef} required />
 								</Form.Group>
-								<Button disabled={loading} className="w-100 my-2" type="submit" >Send Token</Button>
+								<Button disabled={loading} className="w-100 my-2" type="submit" >
+									{loading ?
+									<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+									:
+									<span>Send token</span>
+									}
+								</Button>
+								<p>
+									<small className="text-danger">{showMsg && msg && `${msg}...`}</small>
+								</p>
 							</Form>
 						}
 					</>

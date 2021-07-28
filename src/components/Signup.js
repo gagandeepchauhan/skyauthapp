@@ -4,7 +4,8 @@ import {useAuth} from '../contexts/AuthContext'
 import {Link,useHistory} from 'react-router-dom'
 
 export default function Signup() {
-	const {currentUser,setCurrentUser,signup}=useAuth()
+	const {currentUser,setCurrentUser,signup,displayMessages,msg}=useAuth()
+	const [showMsg,setShowMsg]=useState(false)
 	const emailRef=useRef()
 	const passwordRef=useRef()
 	const passwordConfirmRef=useRef()
@@ -21,6 +22,10 @@ export default function Signup() {
 		try{
 			setError([])
 			setLoading(true)
+			setShowMsg(true)
+			console.log(msg,showMsg)
+			displayMessages()
+			console.log(msg,showMsg)
 			const resp=await signup({user_type:'customer',email:emailRef.current.value,password:passwordRef.current.value,first_name:firstNameRef.current.value,last_name:lastNameRef.current.value,phone_number:phoneNumberRef.current.value}) //be sure to enter a valid email and strong password otherwise it will return error 400
 			const result=await resp.json()
 			if(resp.ok){
@@ -32,11 +37,12 @@ export default function Signup() {
 		}catch(err){
 			setError([{field:'Fetch failed',message:err.message}])
 		}
+		setShowMsg(false)
 		setLoading(false)
 	}
 	return (
 		<>
-			<Card className="p-3">
+			<Card className="p-1" style={{border:"none"}}>
 				<Card.Body>
 					<h2 className="mb-4 text-center">Sign Up</h2>
 					{error.length!==0 && <Alert variant="danger">
@@ -70,7 +76,16 @@ export default function Signup() {
 							<Form.Label>Confirm Password</Form.Label>
 							<Form.Control type="password" ref={passwordConfirmRef} required />
 						</Form.Group>
-						<Button disabled={loading} className="w-100 my-2" type="submit" >Sign up</Button>
+						<Button disabled={loading} className="w-100 my-2" type="submit" >
+							{loading ?
+							<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+							:
+							<span>Sign up</span>
+							}
+						</Button>
+						<p>
+							<small className="text-danger">{showMsg && msg && `${msg}...`}</small>
+						</p>
 					</Form>
 				</Card.Body>
 			</Card>

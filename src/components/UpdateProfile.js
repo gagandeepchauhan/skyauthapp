@@ -4,7 +4,8 @@ import {useAuth} from '../contexts/AuthContext'
 import {Link,useHistory} from 'react-router-dom'
 
 export default function UpdateProfile() {
-	const {changePassword}=useAuth()
+	const {changePassword,displayMessages,msg}=useAuth()
+	const [showMsg,setShowMsg]=useState(false)
 	const currentPasswordRef=useRef()
 	const passwordRef=useRef()
 	const passwordConfirmRef=useRef()
@@ -21,6 +22,8 @@ export default function UpdateProfile() {
 		try{
 			setError([])
 			setLoading(true)
+			setShowMsg(true)
+			displayMessages()
 			const resp=await changePassword({current_password:currentPasswordRef.current.value,new_password:passwordRef.current.value})		
 			const result=await resp.json()
 			// console.log(resp)
@@ -32,11 +35,12 @@ export default function UpdateProfile() {
 		}catch(err){
 			history.push("/")
 		}
+		setShowMsg(false)
 		setLoading(false)		
 	}
 	return (
 		<>
-			<Card className="p-3">
+			<Card className="p-1" style={{border:"none"}}>
 				<Card.Body>
 					<h2 className="mb-4 text-center">Edit Profile</h2><hr/>
 					{error.length!==0 && <Alert variant="danger">
@@ -48,17 +52,26 @@ export default function UpdateProfile() {
 					<Form onSubmit={handleSubmit} >
 						<Form.Group id="current-password">
 							<Form.Label>Current Password</Form.Label>
-							<Form.Control required placeholder="leave blank to keep the same" type="password" ref={currentPasswordRef} />
+							<Form.Control required type="password" ref={currentPasswordRef} />
 						</Form.Group>
 						<Form.Group id="password">
 							<Form.Label>New Password</Form.Label>
-							<Form.Control required placeholder="leave blank to keep the same" type="password" ref={passwordRef} />
+							<Form.Control required type="password" ref={passwordRef} />
 						</Form.Group>
 						<Form.Group id="password-confirm">
 							<Form.Label>Confirm Password</Form.Label>
-							<Form.Control required placeholder="leave blank to keep the same" type="password" ref={passwordConfirmRef} />
+							<Form.Control required type="password" ref={passwordConfirmRef} />
 						</Form.Group>
-						<Button disabled={loading} className="w-100 my-2" type="submit" >Update</Button>
+						<Button disabled={loading} className="w-100 my-2" type="submit" >
+							{loading ?
+							<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+							:
+							<span>Update</span>
+							}
+						</Button>
+						<p>
+							<small className="text-danger">{showMsg && msg && `${msg}...`}</small>
+						</p>
 					</Form>
 				</Card.Body>
 			</Card>

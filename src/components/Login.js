@@ -3,8 +3,10 @@ import {Button,Form,Card,Alert} from 'react-bootstrap'
 import {useAuth} from '../contexts/AuthContext'
 import {Link,useHistory} from 'react-router-dom'
 
+const messages=['please wait','its taking longer than usual','getting coffee for you','actually we\'re on a free heroku dyno, thats why','it takes so long only on first api call','please be patient for just few seconds more']
 export default function Login() {
-	const {currentUser,setCurrentUser,login}=useAuth()
+	const {currentUser,setCurrentUser,login,displayMessages,msg}=useAuth()
+	const [showMsg,setShowMsg]=useState(false)
 	const emailRef=useRef()
 	const passwordRef=useRef()
 	const [error,setError]=useState([])
@@ -16,6 +18,8 @@ export default function Login() {
 		try{
 			setError([])
 			setLoading(true)
+			setShowMsg(true)
+			displayMessages()
 			const resp=await login({email:emailRef.current.value,password:passwordRef.current.value}) //be sure to enter a valid email and strong password otherwise it will return error 400
 			const result=await resp.json()
 			if(resp.ok){
@@ -27,11 +31,12 @@ export default function Login() {
 		}catch(err){
 			setError([{field:'Fetch failed',message:err.message}])
 		}
+		setShowMsg(false)
 		setLoading(false)
 	}
 	return (
 		<>
-			<Card className="p-3">
+			<Card className="p-1" style={{border:"none"}}>
 				<Card.Body>
 					<h2 className="mb-4 text-center">Log In</h2>
 					{error.length!==0 && <Alert variant="danger">
@@ -49,7 +54,16 @@ export default function Login() {
 							<Form.Label>Password</Form.Label>
 							<Form.Control type="password" ref={passwordRef} required />
 						</Form.Group>
-						<Button disabled={loading} className="w-100 my-2" type="submit" >Log In</Button>
+						<Button disabled={loading} className="w-100 my-2" type="submit" >
+							{loading ?
+							<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+							:
+							<span>Log In</span>
+							}
+						</Button>
+						<p>
+							<small className="text-danger">{showMsg && msg && `${msg}...`}</small>
+						</p>
 					</Form>
 					<div className="w-100 text-center mt-3">
 						<Link to="/forgot-password">forgot password?</Link>
